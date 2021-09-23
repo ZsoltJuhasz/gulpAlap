@@ -1,4 +1,7 @@
-const {src, dest, watch} = require('gulp');
+const {src, dest, watch, series} = require('gulp');
+const uglify = require('gulp-uglify');
+const rename = require('gulp-rename');
+const cleanCSS = require('gulp-clean-css');
 
 function streamHtml(){ 
 	return src('src/*.html') 
@@ -6,7 +9,9 @@ function streamHtml(){
 }
 
 function streamJs(){ 
-	return src('src/js/*.js') 
+	return src('src/js/*.js')
+    .pipe(uglify())
+    .pipe(rename({extname: '.min.js'}))
 	.pipe(dest('public/js'));  
 }
 
@@ -15,11 +20,21 @@ function streamJquery(){
     .pipe(dest('public/lib'));
 }
 
+function streamCss(){
+    return src('src/css/*.css')
+    .pipe(cleanCSS())
+    .pipe(rename({extname: '.min.css'}))
+    .pipe(dest('public/css'));
+}
 
 exports.jquery = streamJquery;
 exports.html = streamHtml;
+exports.all = series(streamHtml,streamJs,streamJquery,streamCss);
 exports.default = function(){
     watch('src/*.html', streamHtml);
     watch('src/js/*.js', streamJs);
+    watch('src/css/*.css',streamCss);
 }
+
+
 
